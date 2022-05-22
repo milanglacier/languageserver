@@ -79,10 +79,16 @@ LanguageBase <- R6::R6Class("LanguageBase",
 
         read_content = function(nbytes) {
             data <- ""
+            olddata <- data
             while (nbytes > 0) {
                 newdata <- self$read_char(nbytes)
-                if (length(newdata) > 0) {
+                not_has_same_content <- newdata != olddata
+                # there has the the possibility that the client sends duplicated contents
+                # so if the content read is duplicated, ignore the content read
+
+                if (length(newdata) > 0 && not_has_same_content) {
                     nbytes <- nbytes - nchar(newdata, type = "bytes")
+                    olddata <- newdata
                     data <- paste0(data, newdata)
                 }
                 Sys.sleep(0.01)
